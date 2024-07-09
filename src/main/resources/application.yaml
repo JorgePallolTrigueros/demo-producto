@@ -1,0 +1,19 @@
+
+
+spring:
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  datasource:
+    platform: mysql
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/microservicio_product_v2?serverTimezone=UTC
+    username: root
+    password: Kojinanjo1@
+
+
+
+server:
+  port: 8080
