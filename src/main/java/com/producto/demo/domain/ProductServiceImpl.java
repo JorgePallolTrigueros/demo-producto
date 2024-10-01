@@ -10,7 +10,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -91,6 +93,31 @@ public class ProductServiceImpl implements ProductService{
                         repository::delete, 
                         ()-> {throw new ProductNotFoundException("Product not found: "+id);}
                 );
+    }
+
+    @Override
+    public boolean reduceStock(Long productId, Long quantity) {
+
+        final Optional<ProductEntity> optionalProductEntity = repository.findById(productId);
+        if(optionalProductEntity.isEmpty()){
+            throw new ProductNotFoundException("Product not found: "+productId);
+        }
+        ProductEntity productEntity = optionalProductEntity.get();
+
+        // 100  >= 5 = true    1
+        // 5    >= 5 = true    0
+        // 4    >= 5 = false  -1
+
+        if(productEntity.getQuantity().compareTo(BigDecimal.valueOf(quantity) )>=0){
+            productEntity.setQuantity(productEntity
+                    .getQuantity()
+                    .subtract(BigDecimal.valueOf(quantity)));
+
+            repository.saveAndFlush(productEntity);
+            return true;
+        }
+
+        return false;
     }
 
     private static void mapProductDto2Entity(ProductDto productDto, ProductEntity productEntity) {

@@ -37,4 +37,7 @@ public interface ProductService {
 
     //DELETE
     void delete(Long id) throws ProductNotFoundException;
+
+    boolean reduceStock(Long productId, Long quantity);
+
 }

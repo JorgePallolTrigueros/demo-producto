@@ -70,4 +70,13 @@ public class ProductController {
         productService.delete(id);
     }
 
+
+    @PatchMapping("/reduce-stock/product-id/{productId}/quantity/{quantity}")
+    public boolean reduceStock(@PathVariable Long productId,@PathVariable Long quantity){
+        return productService.reduceStock(productId,quantity);
+    }
+
+
+
+
 }
