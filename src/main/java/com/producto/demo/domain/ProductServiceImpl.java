@@ -5,6 +5,7 @@ import com.producto.demo.dao.entity.ProductEntity;
 import com.producto.demo.dao.repository.ProductRepository;
 import com.producto.demo.dto.*;
 import com.producto.demo.exception.ProductNotFoundException;
+import com.producto.demo.service.notification.ProductNotificationService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +21,10 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ProductServiceImpl implements ProductService{
 
+    public static final int MIN_LOW_STOCK = 10;
     private final ProductRepository repository;
     private final GalleryService galleryService;
+    private final ProductNotificationService productNotificationService;
 
     @Override
     @Transactional
@@ -102,11 +105,12 @@ public class ProductServiceImpl implements ProductService{
         if(optionalProductEntity.isEmpty()){
             throw new ProductNotFoundException("Product not found: "+productId);
         }
-        ProductEntity productEntity = optionalProductEntity.get();
+        ProductEntity productEntity = optionalProductEntity.get();// (dato) -> get
 
-        // 100  >= 5 = true    1
-        // 5    >= 5 = true    0
-        // 4    >= 5 = false  -1
+        // 100  >= 5   = true    1
+
+        // 10    >= 10 = true    0
+        // 10    >= 7  = false  -1
 
         if(productEntity.getQuantity().compareTo(BigDecimal.valueOf(quantity) )>=0){
             productEntity.setQuantity(productEntity
@@ -114,6 +118,12 @@ public class ProductServiceImpl implements ProductService{
                     .subtract(BigDecimal.valueOf(quantity)));
 
             repository.saveAndFlush(productEntity);
+
+            //TODO si hay pocos productos es decir hay menos de X productos
+            //TODO en producEntity.getQuantity si es menor ejemplo a 10 debe enviar una notificacion por cola
+            if(productEntity.getQuantity().compareTo(BigDecimal.valueOf(MIN_LOW_STOCK))<=0){
+                productNotificationService.notifyProductLowStock( mapProductEntity2Dto(productEntity) );
+            }
             return true;
         }
 
