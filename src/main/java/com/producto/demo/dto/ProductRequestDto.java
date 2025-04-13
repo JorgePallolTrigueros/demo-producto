@@ -26,6 +26,4 @@ public class ProductRequestDto {
     private String category;
     @PositiveOrZero
     private BigDecimal quantity;
-    @Builder.Default
-    private List<GalleryProductRequestDto> galleries = new ArrayList<>();
 }

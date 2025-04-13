@@ -3,6 +3,7 @@ package com.producto.demo.domain;
 import com.producto.demo.dto.ProductDto;
 import com.producto.demo.dto.ProductRequestDto;
 import com.producto.demo.exception.ProductNotFoundException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,6 +27,8 @@ public interface ProductService {
 
     //CREATE
     ProductDto save(ProductRequestDto productRequestDto);
+
+    ProductDto saveImages(Long id,MultipartFile[] files);
 
     //READ
     List<ProductDto> findAll();

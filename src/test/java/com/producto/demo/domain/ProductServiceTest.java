@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -89,8 +90,10 @@ public class ProductServiceTest {
         // Mock
         Mockito.when(productRepository.saveAndFlush(productEntityToInsert)).thenReturn(productEntitySaved);
 
+        MultipartFile[] files = new MultipartFile[0];
+
         // Action
-        ProductDto productResult = productService.save(productRequestDto);
+        ProductDto productResult = productService.save(productRequestDto,files);
 
         // Assertion
         Assertions.assertThat(productResult).isNotNull();

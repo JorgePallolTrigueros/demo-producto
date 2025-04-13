@@ -6,10 +6,12 @@ import com.producto.demo.dao.repository.ProductRepository;
 import com.producto.demo.dto.*;
 import com.producto.demo.exception.ProductNotFoundException;
 import com.producto.demo.service.notification.ProductNotificationService;
+import com.producto.demo.service.storage.FileStorageService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,10 +27,13 @@ public class ProductServiceImpl implements ProductService{
     private final ProductRepository repository;
     private final GalleryService galleryService;
     private final ProductNotificationService productNotificationService;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
     public ProductDto save(ProductRequestDto productRequestDto) {
+
+
 
         ProductEntity productToSave = new ProductEntity();
         productToSave.setName(productRequestDto.getName());
@@ -37,20 +42,28 @@ public class ProductServiceImpl implements ProductService{
         productToSave.setDescription(productRequestDto.getDescription());
         productToSave.setQuantity(productRequestDto.getQuantity());
 
-
-        productToSave.setGalleriesEntity(
-                productRequestDto.getGalleries().stream().map(g->{
-                    GalleryEntity galleryEntity = new GalleryEntity();
-                    galleryEntity.setUrl(g.getUrl());
-                    return galleryEntity;
-                }).collect(Collectors.toList())
-        );
-
         productToSave = repository.saveAndFlush(productToSave);
 
 
 
         return mapProductEntity2Dto(productToSave);
+    }
+
+    @Override
+    public ProductDto saveImages(Long id,MultipartFile[] files) {
+
+        if(files==null || files.length==0){
+            log.info("No hay imagenes que guardar");
+        }else{
+            log.info("Guardando: "+files.length+" imagenes");
+            for(MultipartFile file : files){
+                if(file!=null && !file.isEmpty()){
+                    fileStorageService.save(String.valueOf(id),file);
+                }
+            }
+        }
+
+        return new ProductDto();
     }
 
     @Override
@@ -146,6 +159,7 @@ public class ProductServiceImpl implements ProductService{
         productDto.setCategory(productEntity.getCategoryEntity().getId());
         productDto.setPrice(productEntity.getPrice());
         productDto.setQuantity(productEntity.getQuantity());
+        productDto.setCreatedAt(productEntity.getCreatedAt());
         productDto.setGalleries(productEntity.getGalleries().stream().map(g -> {
             GalleryDto galleryDto = new GalleryDto();
             galleryDto.setUrl(g.getUrl());

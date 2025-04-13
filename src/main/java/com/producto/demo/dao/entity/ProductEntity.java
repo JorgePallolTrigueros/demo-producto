@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -25,6 +26,9 @@ public class ProductEntity {
 
     @PositiveOrZero
     private BigDecimal quantity;
+
+    @Column(name = "created_at")
+    private Date createdAt = new Date();
 
     @ManyToOne(optional = false)
     @JoinColumn(name="category_id", nullable=false, updatable=false)

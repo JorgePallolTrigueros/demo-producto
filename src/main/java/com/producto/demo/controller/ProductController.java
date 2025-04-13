@@ -14,7 +14,9 @@ import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.RouterOperation;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -60,13 +62,23 @@ public class ProductController {
         return productService.save(request);
     }
 
+    @PostMapping(value = "/img/product/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ProductDto saveImageProduct(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        return productService.saveImages(id, new MultipartFile[]{file});
+    }
+
+
+
+
     @PatchMapping("/")
     public ProductDto updateProduct(@RequestBody ProductDto productDto){
         return productService.update(productDto);
     }
 
     @DeleteMapping("/{id}")
-    void deleteProduct(Long id){
+    void deleteProduct(@PathVariable Long id){
         productService.delete(id);
     }
 
