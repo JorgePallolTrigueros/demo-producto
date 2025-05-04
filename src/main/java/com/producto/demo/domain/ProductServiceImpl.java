@@ -10,10 +10,13 @@ import com.producto.demo.service.storage.FileStorageService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -54,16 +57,38 @@ public class ProductServiceImpl implements ProductService{
 
         if(files==null || files.length==0){
             log.info("No hay imagenes que guardar");
-        }else{
-            log.info("Guardando: "+files.length+" imagenes");
-            for(MultipartFile file : files){
-                if(file!=null && !file.isEmpty()){
-                    fileStorageService.save(String.valueOf(id),file);
-                }
+            throw new IllegalArgumentException("No hay datos de imagen que guardar");
+        }
+
+        ProductEntity productEntity = repository
+                .findById(id)
+                .orElseThrow(()-> new ProductNotFoundException("Product not found: "+id));
+
+        log.info("Guardando: "+files.length+" imagenes");
+        final List<String> imgs = new ArrayList<>();
+        for(MultipartFile file : files){
+            if(file!=null && !file.isEmpty()){
+                imgs.add(fileStorageService.save(String.valueOf(id),file));
             }
         }
 
-        return new ProductDto();
+        for(final String resource:imgs){
+            try {
+                String imgPath = resource;
+                log.info("Imagen guardada en: {}", imgPath);
+                if(productEntity.getGalleries()==null){
+                    productEntity.setGalleries(new ArrayList<>());
+                }
+                productEntity.getGalleries().add(new GalleryEntity(imgPath,productEntity));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        productEntity = repository.saveAndFlush(productEntity);
+
+
+        return mapProductEntity2Dto(productEntity);
     }
 
     @Override

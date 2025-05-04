@@ -17,6 +17,14 @@ public class GalleryEntity {
     @JoinColumn(name="product_id", nullable=false, updatable=false)
     private ProductEntity productEntity;
 
+    public GalleryEntity() {
+    }
+
+    public GalleryEntity(String url, ProductEntity productEntity) {
+        this.url = url;
+        this.productEntity = productEntity;
+    }
+
     public void setProductEntityById(Long id){
         this.productEntity = new ProductEntity();
         productEntity.setId(id);
