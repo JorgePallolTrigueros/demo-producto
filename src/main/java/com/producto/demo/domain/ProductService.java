@@ -31,9 +31,9 @@ public interface ProductService {
     ProductDto saveImages(Long id,MultipartFile[] files);
 
     //READ
-    List<ProductDto> findAll();
+    List<ProductDto> findAll(String userId);
 
-    ProductDto findById(Long id) throws ProductNotFoundException;
+    ProductDto findById(String userId,Long id) throws ProductNotFoundException;
 
     //UPDATE
     ProductDto update(ProductDto productDto);

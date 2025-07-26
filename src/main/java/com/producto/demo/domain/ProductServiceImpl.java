@@ -5,11 +5,13 @@ import com.producto.demo.dao.entity.ProductEntity;
 import com.producto.demo.dao.repository.ProductRepository;
 import com.producto.demo.dto.*;
 import com.producto.demo.exception.ProductNotFoundException;
+import com.producto.demo.service.notification.CampaingApiService;
 import com.producto.demo.service.notification.ProductNotificationService;
 import com.producto.demo.service.storage.FileStorageService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +33,7 @@ public class ProductServiceImpl implements ProductService{
     private final GalleryService galleryService;
     private final ProductNotificationService productNotificationService;
     private final FileStorageService fileStorageService;
+    private final CampaingApiService campaingApiService;
 
     @Override
     @Transactional
@@ -92,7 +95,17 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public List<ProductDto> findAll() {
+    public List<ProductDto> findAll(String userId) {
+        List<CampaignResponseDto> campaignResponse = new ArrayList<>();
+        if(StringUtils.isNotEmpty(userId)){
+            campaignResponse = campaingApiService.getCampaignByUserId(userId);
+        }else{
+            log.info("No se ha enviado usuario, no se aplican campanias");
+        }
+
+
+        campaignResponse.forEach(c->log.info("Campaing: {} ,data: {}",c.getName(), c));
+
         return repository
                 .findAll()
                 .stream()
@@ -101,7 +114,7 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public ProductDto findById(Long id) throws ProductNotFoundException {
+    public ProductDto findById(String userId,Long id) throws ProductNotFoundException {
         log.info("Calling findById: {}",id);
         return repository
                 .findById(id)

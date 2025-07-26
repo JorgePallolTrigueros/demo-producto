@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springframework.http.MediaType;
@@ -48,15 +49,18 @@ public class ProductController {
         //productService.save(product2);
     }
 
+    ///products?user=jorge@pallol.com
     @GetMapping("/")
-    public List<ProductDto> findAll(){
-        return productService.findAll();
-    }
-    @GetMapping("/{id}")
-    public ProductDto findProductById(@PathVariable  Long id){
-        return productService.findById(id);
+    public List<ProductDto> findAll(@RequestParam(value = "user_id",required = false) String userId){
+        return productService.findAll(userId);
     }
 
+    @GetMapping("/{id}")
+    public ProductDto findProductById(@RequestParam(value = "user_id",required = false) String userId,@PathVariable  Long id){
+        return productService.findById(userId,id);
+    }
+
+    //quien guarda productos solo es el admin
     @PostMapping("/")
     public ProductDto saveProduct(@RequestBody @Valid ProductRequestDto request){
         return productService.save(request);
