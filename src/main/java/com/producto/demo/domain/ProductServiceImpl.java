@@ -99,6 +99,7 @@ public class ProductServiceImpl implements ProductService{
         List<CampaignResponseDto> campaignResponse = new ArrayList<>();
         if(StringUtils.isNotEmpty(userId)){
             campaignResponse = campaingApiService.getCampaignByUserId(userId);
+            log.info("Aplicando campanias: {} al usuario: {}",campaignResponse.size(),userId);
         }else{
             log.info("No se ha enviado usuario, no se aplican campanias");
         }
@@ -106,10 +107,30 @@ public class ProductServiceImpl implements ProductService{
 
         campaignResponse.forEach(c->log.info("Campaing: {} ,data: {}",c.getName(), c));
 
+        List<CampaignResponseDto> finalCampaignResponse = campaignResponse;
         return repository
                 .findAll()
                 .stream()
                 .map(ProductServiceImpl::mapProductEntity2Dto)
+                .map(product->{
+
+                    if(finalCampaignResponse
+                            .stream()
+                            .noneMatch(c->c.getProducts().contains(product.getId()))){
+                        log.info("No se aplican descuentos para el producto: {}",product.getId());
+                        return product;
+                    }
+
+                    double totalDiscounts = finalCampaignResponse
+                            .stream()
+                            .filter(c->c.getProducts().contains(product.getId()))
+                            .mapToDouble(CampaignResponseDto::getDiscount).sum();
+                    final double basePrice = product.getPrice();
+                    final double discountPrice = basePrice - (basePrice*totalDiscounts);
+                    log.info("Producto: {} precio original: {} descuentos sumados: {} precio final: {} para usuario: {}",product.getId(),basePrice,totalDiscounts,discountPrice,userId);
+                    product.setPrice(discountPrice);
+                    return product;
+                })
                 .collect(Collectors.toList());
     }
 
